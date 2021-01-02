@@ -14,6 +14,7 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar mToolbar;
     private ViewPager myViewPager; //view pager for scrolling between tabs
     private TabLayout myTabLayout; // for displaying the tabs
+    private TabsAccessorAdapter myTabsAccessorAdapter; // adapter for viewing the tabs
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,5 +25,17 @@ public class MainActivity extends AppCompatActivity {
         //setting the toolbar as the main app bar of the app
         setSupportActionBar(mToolbar);
         getSupportActionBar().setTitle("ChatApp");
+
+        //getting the pager defined in main activity.xml
+        myViewPager = (ViewPager) findViewById(R.id.main_tabs_pager);
+        //Return the FragmentManager for interacting with fragments associated with this activity.
+        myTabsAccessorAdapter = new TabsAccessorAdapter(getSupportFragmentManager());
+        //setting the adapter
+        myViewPager.setAdapter(myTabsAccessorAdapter);
+
+
+        myTabLayout = (TabLayout) findViewById(R.id.main_tabs);
+        myTabLayout.setupWithViewPager(myViewPager);
+
     }
 }

@@ -1,6 +1,7 @@
 package com.example.chatapp;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
@@ -48,4 +49,28 @@ public class TabsAccessorAdapter extends FragmentPagerAdapter {
     }
 
     //method to set title for these pages
+
+
+    @Nullable
+    @Override
+    public CharSequence getPageTitle(int position) {
+        //switch to set title
+        switch (position)
+        {
+            case 0:
+                    return "Chats";
+
+            case 1:
+                    return "Groups";
+
+
+            case 2:
+                    return "Contacts";
+
+
+            default:
+                return null;
+        }
+
+    }
 }

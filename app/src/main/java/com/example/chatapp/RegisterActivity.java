@@ -29,7 +29,7 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText UserEmail , UserPassword;
     private TextView AlreadyHaveAccountLink;
     private FirebaseAuth mAuth;
-
+    //The entry point for accessing a Firebase Database. You can get an instance by calling getInstance(). To access a location in the database and read or write data, use getReference().
     private DatabaseReference rootRef;
 
     private ProgressDialog loadingBar ; //A dialog showing a progress indicator and an optional text message or view.
@@ -86,12 +86,17 @@ public class RegisterActivity extends AppCompatActivity {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
                     //if user is created successfully
+
                     if(task.isSuccessful()){
                         //SendUserToLoginActivity();
+                        //getting the id of the current user
+                        String currentUserId = mAuth.getCurrentUser().getUid();
+                        rootRef.child("Users").child(currentUserId).setValue("");
+
                         SendUserToMainActivity(); // so that the user can directly use the app when he creates the account
                         Toast.makeText(RegisterActivity.this, "Account Created Successfully", Toast.LENGTH_SHORT).show();
                         loadingBar.dismiss();
-                        mAuth.signOut();
+
                     }
                     else{
                         //if error occurs

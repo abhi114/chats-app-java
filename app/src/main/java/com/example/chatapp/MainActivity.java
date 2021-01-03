@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
         //now check using root ref
         //Add a listener for changes in the data at this location. Each time time the data changes, your listener will be called with an immutable snapshot of the data.
 
-        RootRef.child(currentUserId).addValueEventListener(new ValueEventListener() {
+        RootRef.child("Users").child(currentUserId).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 //if the user name is available in the database

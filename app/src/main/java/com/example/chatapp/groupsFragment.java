@@ -19,7 +19,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 public class groupsFragment extends Fragment {
 
@@ -76,12 +78,22 @@ public class groupsFragment extends Fragment {
             //This method will be called with a snapshot of the data at this location.
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 //using an iterator that will go through the list and display line by line
+                Set<String> set = new HashSet<>();
                 Iterator iterator = dataSnapshot.getChildren().iterator();//every child can be read using iterator
                 //every time a new group gets added the iterator add the entire data and hence duplicates will be there so we had used sets
                 while (iterator.hasNext()){
-
+                    //it will prevent the duplication of data
+                    //The key name for the source location of this snapshot or null if this snapshot points to the database root.
+                    //here key means the name of the group
+                    set.add(((DataSnapshot)iterator.next()).getKey());
 
                 }
+                //clear it to remove duplicates
+                list_of_groups.clear();
+                list_of_groups.addAll(set);
+                //notifies the attached observers that the underlying data has been changed and any View reflecting the data set should refresh itself.
+                arrayAdapter.notifyDataSetChanged();
+
 
             }
 

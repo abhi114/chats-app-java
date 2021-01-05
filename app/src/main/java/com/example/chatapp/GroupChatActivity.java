@@ -1,6 +1,7 @@
 package com.example.chatapp;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -14,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -23,6 +25,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Iterator;
 
 public class GroupChatActivity extends AppCompatActivity {
 
@@ -77,7 +80,57 @@ public class GroupChatActivity extends AppCompatActivity {
                 userMessageInput.setText("");
             }
         });
+
+
+
+
     }
+
+    //on start to display the previous messages once the group is clicked
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        //reference to the group where are at
+        GroupNameRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            //This method is triggered when a new child is added to the location to which this listener was added.
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                if(dataSnapshot.exists()){
+                    //if messages exists
+                    DisplayMessages(dataSnapshot);
+                }
+
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                if(dataSnapshot.exists()){
+                    //if messages exists
+                    DisplayMessages(dataSnapshot);
+                }
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+
+
 
     //we first created a unique key for the message to be sent inside the Group field in the database , then we created a reference of that unique message key (messageKey) by the name of GroupMessageKeyref and then we entered the value
 
@@ -151,5 +204,20 @@ public class GroupChatActivity extends AppCompatActivity {
         });
 
 
+    }
+    private void DisplayMessages(DataSnapshot dataSnapshot) {
+        //displaying the message using iterator
+        Iterator iterator = dataSnapshot.getChildren().iterator();
+        while(iterator.hasNext()){
+            //iterator.next will only give the key get value will give the value for that date field
+            String chatDate = (String) ((DataSnapshot)iterator.next()).getValue();
+            String chatMessage = (String) ((DataSnapshot)iterator.next()).getValue();
+            String chatName = (String) ((DataSnapshot)iterator.next()).getValue();
+            String chatTime = (String) ((DataSnapshot)iterator.next()).getValue();
+
+            //display
+            displayTextMessages.append(chatName + " :\n" + chatMessage + "\n" + chatTime + "    " + chatDate + "\n\n\n");
+
+        }
     }
 }

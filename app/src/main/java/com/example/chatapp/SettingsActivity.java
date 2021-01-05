@@ -14,8 +14,11 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.database.connection.ListenHashProvider;
 
 import java.util.HashMap;
@@ -49,6 +52,43 @@ public class SettingsActivity extends AppCompatActivity {
             public void onClick(View v) {
                 //method to update the profile details
                 UpdateSettings();
+            }
+        });
+        //to get back the previous info of the username and status
+        RetrieveUserInfo();
+    }
+
+    //retrieve
+    private void RetrieveUserInfo() {
+        rootRef.child("Users").child(currentUserID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                //if the user exists and has name and image field
+                //since status and username are compulsory
+                if((dataSnapshot.exists()) && (dataSnapshot.hasChild("name") && (dataSnapshot.hasChild("image")))){
+                    //now display all the three as default
+                    String retrieveUserName = dataSnapshot.child("name").getValue().toString();
+                    String retrieveStatus = dataSnapshot.child("status").getValue().toString();
+                    String retrieveProfileImage = dataSnapshot.child("image").getValue().toString();
+
+                }else if((dataSnapshot.exists()) && (dataSnapshot.hasChild("name"))){
+                    String retrieveUserName = dataSnapshot.child("name").getValue().toString();
+                    String retrieveStatus = dataSnapshot.child("status").getValue().toString();
+
+                    userName.setText(retrieveUserName);
+                    userStatus.setText(retrieveStatus);
+
+
+                }else{ //if nothing is set in the settings it means its a new account
+                    Toast.makeText(SettingsActivity.this, "Please set & update your profile information...", Toast.LENGTH_SHORT).show();
+
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
             }
         });
     }

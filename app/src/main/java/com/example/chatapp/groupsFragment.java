@@ -1,5 +1,6 @@
 package com.example.chatapp;
 
+import android.content.Intent;
 import android.icu.text.Edits;
 import android.os.Bundle;
 
@@ -9,6 +10,7 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -56,6 +58,25 @@ public class groupsFragment extends Fragment {
         InitializeFields();
 
         RetrieveAndDisplayGroups();
+
+        //send the selected group name to the group chat activity
+
+        list_view.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            //Callback method to be invoked when an item in this AdapterView has been clicked.
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                //The AdapterView where the click happened.
+                //The view within the AdapterView that was clicked (this will be a view provided by the adapter)
+                //The position of the view in the adapter.
+                //The row id of the item that was clicked.
+                String currentGroupName = parent.getItemAtPosition(position).toString(); // Gets the data associated with the specified position in the list.
+                //now send user to group chat
+                Intent groupChatIntent = new Intent(getContext(), GroupChatActivity.class);
+                groupChatIntent.putExtra("groupName",currentGroupName); //key value pair
+                startActivity(groupChatIntent);
+
+            }
+        });
 
         return groupFragmentView;
     }

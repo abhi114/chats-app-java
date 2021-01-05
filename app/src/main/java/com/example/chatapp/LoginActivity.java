@@ -64,6 +64,16 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+
+        //click listener for sending to phone verification
+        PhoneLoginButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent phoneLoginIntent = new Intent(LoginActivity.this,PhoneLoginActivity.class);
+                startActivity(phoneLoginIntent);
+            }
+        });
+
     }
 
     private void AllowUserToLogin() {

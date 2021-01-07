@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -25,6 +27,7 @@ import com.google.firebase.database.connection.ListenHashProvider;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -47,6 +50,8 @@ public class SettingsActivity extends AppCompatActivity {
     private static final int GalleryPic = 1;
     //create reference to user profile image
     private StorageReference UserProfileImageRef;
+    //progress dialog for loading
+    private ProgressDialog loadingBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,12 +105,17 @@ public class SettingsActivity extends AppCompatActivity {
                     String retrieveStatus = dataSnapshot.child("status").getValue().toString();
                     String retrieveProfileImage = dataSnapshot.child("image").getValue().toString();
 
+                    userName.setText(retrieveUserName);
+                    userStatus.setText(retrieveStatus);
+                    Picasso.get().load(retrieveProfileImage).into(userProfileImage);
+
                 }else if((dataSnapshot.exists()) && (dataSnapshot.hasChild("name"))){
                     String retrieveUserName = dataSnapshot.child("name").getValue().toString();
                     String retrieveStatus = dataSnapshot.child("status").getValue().toString();
 
                     userName.setText(retrieveUserName);
                     userStatus.setText(retrieveStatus);
+
 
 
                 }else{ //if nothing is set in the settings it means its a new account
@@ -166,6 +176,7 @@ public class SettingsActivity extends AppCompatActivity {
         userName = (EditText) findViewById(R.id.set_user_name);
         userStatus = (EditText) findViewById(R.id.set_profile_status);
         userProfileImage = (CircleImageView) findViewById(R.id.profile_image);
+        loadingBar = new ProgressDialog(this);
     }
 
     private void SendUserToMainActivity(){
@@ -193,32 +204,52 @@ public class SettingsActivity extends AppCompatActivity {
 
         }
 
+        //this one is when the image is cropped
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
 
             if(resultCode == RESULT_OK ){
+
+                loadingBar.setTitle("Set Profile Image");
+                loadingBar.setMessage("Please Wait , Your Profile Image is Updating...");
+                loadingBar.setCanceledOnTouchOutside(false);
+                loadingBar.show();
                 //get the uri of the cropped image
-                Uri resultUri = result.getUri();
+                final Uri resultUri = result.getUri();
 
 
                 //store in firebase database
                 //Represents a reference to a Google Cloud Storage object. Developers can upload and download objects, get/set object metadata, and delete an object at a specified path.
                 //we are storing the image by overwriting any previous image if present
-                StorageReference filePath = UserProfileImageRef.child(currentUserID + ".jpg");
+                final StorageReference filePath = UserProfileImageRef.child(currentUserID + ".jpg");
 
                 //put the file in database
-                filePath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                filePath.putFile(resultUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
-                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                        if(task.isSuccessful()){
-                            Toast.makeText(SettingsActivity.this, "Profile Image Uploaded Successfully", Toast.LENGTH_SHORT).show();
-                        }else{
-                            String message = task.getException().toString();
-                            Toast.makeText(SettingsActivity.this, "Error : " + message, Toast.LENGTH_SHORT).show();
-                        }
-
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                final String downloadUrl = uri.toString();
+                                rootRef.child("Users").child(currentUserID).child("image").setValue(downloadUrl).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if(task.isSuccessful()){
+                                            Toast.makeText(SettingsActivity.this, "Profile Image Stored to database", Toast.LENGTH_SHORT).show();
+                                            loadingBar.dismiss();
+                                        }else {
+                                            String message = task.getException().toString();
+                                            Toast.makeText(SettingsActivity.this, "Error :" + message, Toast.LENGTH_SHORT).show();
+                                            loadingBar.dismiss();
+                                        }
+                                    }
+                                });
+                            }
+                        });
                     }
                 });
+
+
             }
 
         }

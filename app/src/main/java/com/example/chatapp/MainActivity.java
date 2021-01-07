@@ -152,6 +152,9 @@ public class MainActivity extends AppCompatActivity {
 
         }
         if(item.getItemId() == R.id.main_find_friends_option){
+            //send to friends activity
+            SendUserToFindFriendsActivity();
+
 
         }
         return  true;
@@ -226,6 +229,13 @@ public class MainActivity extends AppCompatActivity {
         //we dont want the user to go back to the main activity so added the flags
         //SettingIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(SettingIntent);
-        finish();
+
+    }
+
+    private void SendUserToFindFriendsActivity() {
+        Intent FindFriendIntent = new Intent(MainActivity.this,FindFriendsActivity.class);
+        //we dont want the user to go back to the main activity so added the flags
+        //SettingIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(FindFriendIntent);
     }
 }

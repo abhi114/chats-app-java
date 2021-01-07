@@ -1,9 +1,11 @@
 package com.example.chatapp;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -20,6 +22,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.database.connection.ListenHashProvider;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.util.HashMap;
 
@@ -36,6 +43,11 @@ public class SettingsActivity extends AppCompatActivity {
     //for saving the data
     private DatabaseReference rootRef;
 
+    //request code for gallery Intent
+    private static final int GalleryPic = 1;
+    //create reference to user profile image
+    private StorageReference UserProfileImageRef;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,6 +56,8 @@ public class SettingsActivity extends AppCompatActivity {
         //getting the current user id
         currentUserID = mAuth.getCurrentUser().getUid();
         rootRef = FirebaseDatabase.getInstance().getReference();
+        //Returns a new instance of StorageReference pointing to a child location of the current reference.
+        UserProfileImageRef = FirebaseStorage.getInstance().getReference().child("Profile Images"); // creating a folder to store the profile images
 
         InitializeFields();
 
@@ -56,6 +70,21 @@ public class SettingsActivity extends AppCompatActivity {
         });
         //to get back the previous info of the username and status
         RetrieveUserInfo();
+
+        //click for profile image change
+        userProfileImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //send to mobile phone gallery
+                Intent galleryIntent = new Intent();
+                galleryIntent.setAction(Intent.ACTION_GET_CONTENT); //action_get_context - Allow the user to select a particular kind of data and return it.
+                galleryIntent.setType("image/*");//This is used to create intents that only specify a type and not data, for example to indicate the type of data to return.
+                // image/' = 'The MIME type of the data being handled by this intent. This value may be null.
+                //By the help of android startActivityForResult() method, we can get result from another activity.
+                startActivityForResult(galleryIntent,GalleryPic);
+                //this result is catched in the onActivityResult()
+            }
+        });
     }
 
     //retrieve
@@ -144,5 +173,55 @@ public class SettingsActivity extends AppCompatActivity {
         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(mainIntent);
         finish();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        //get the image selected
+        //if the request code Intent matches
+        if(requestCode == GalleryPic && resultCode == RESULT_OK && data != null){
+            Uri ImageUri = data.getData(); //Retrieve data this intent is operating on.
+            //his URI specifies the name of the data; often it uses the content:
+
+            CropImage.activity()
+                    .setGuidelines(CropImageView.Guidelines.ON)
+                    .setAspectRatio(1,1); //aspect ratio for cropping
+            //send the image to the crop activity
+            CropImage.activity(ImageUri).start(this);
+
+        }
+
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+
+            if(resultCode == RESULT_OK ){
+                //get the uri of the cropped image
+                Uri resultUri = result.getUri();
+
+
+                //store in firebase database
+                //Represents a reference to a Google Cloud Storage object. Developers can upload and download objects, get/set object metadata, and delete an object at a specified path.
+                //we are storing the image by overwriting any previous image if present
+                StorageReference filePath = UserProfileImageRef.child(currentUserID + ".jpg");
+
+                //put the file in database
+                filePath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                        if(task.isSuccessful()){
+                            Toast.makeText(SettingsActivity.this, "Profile Image Uploaded Successfully", Toast.LENGTH_SHORT).show();
+                        }else{
+                            String message = task.getException().toString();
+                            Toast.makeText(SettingsActivity.this, "Error : " + message, Toast.LENGTH_SHORT).show();
+                        }
+
+                    }
+                });
+            }
+
+        }
+
     }
 }

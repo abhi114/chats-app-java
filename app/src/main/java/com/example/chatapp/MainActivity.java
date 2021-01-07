@@ -224,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
     private void SendUserToSettingsActivity() {
         Intent SettingIntent = new Intent(MainActivity.this,SettingsActivity.class);
         //we dont want the user to go back to the main activity so added the flags
-        SettingIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        //SettingIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(SettingIntent);
         finish();
     }

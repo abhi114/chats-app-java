@@ -28,6 +28,8 @@ public class FindFriendsActivity extends AppCompatActivity {
     private RecyclerView FindFriendsRecyclerList;
     //query for the firebaseoptions
     private DatabaseReference UsersRef;
+    //to neglect the current user
+
 
 
     @Override

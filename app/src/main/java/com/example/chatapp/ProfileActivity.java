@@ -29,7 +29,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     private CircleImageView userProfileImage;
     private TextView userProfileName , userProfileStatus;
-    private Button SendMessageRequestButton;
+    private Button SendMessageRequestButton, DeclineMessageRequestButton;
     //reference to database
     private DatabaseReference UserRef,ChatRequestRef;
     private FirebaseAuth mAuth;
@@ -60,6 +60,8 @@ public class ProfileActivity extends AppCompatActivity {
         userProfileStatus = (TextView) findViewById(R.id.visit_profile_status);
         SendMessageRequestButton = (Button) findViewById(R.id.send_message_request_button);
         Current_State = "new" ;//two users are new to each other
+        //decline request button
+        DeclineMessageRequestButton = (Button) findViewById(R.id.decline_message_request_button);
 
 
         //retrieve info from database
@@ -120,6 +122,26 @@ public class ProfileActivity extends AppCompatActivity {
                         Current_State = "request_sent";
                         SendMessageRequestButton.setText("Cancel Chat Request");
                     }
+                    //this check is possible because sender is the current user id
+                    else if(request_type.equals("received")){
+                        Current_State = "request_received";
+                        //now this button will see from the receiver point of view
+                        SendMessageRequestButton.setText("Accept Chat Request");
+                        //decline button
+                        DeclineMessageRequestButton.setVisibility(View.VISIBLE);
+                        DeclineMessageRequestButton.setEnabled(true);
+
+                        //click listener to decline the request
+                        DeclineMessageRequestButton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                //cancel method was already defined for the sender side it will be the same for the reciever side
+                                //it will make the cancel request button invisible
+                                CancelChatRequest();
+                            }
+                        });
+
+                    }
                 }
 
 
@@ -171,6 +193,10 @@ public class ProfileActivity extends AppCompatActivity {
                                 SendMessageRequestButton.setEnabled(true);
                                 Current_State = "new";
                                 SendMessageRequestButton.setText("Send Message Request");
+                                //for the receiver of the request if the reciever clicks on cancel request we have to remove the cancel request button
+
+                                DeclineMessageRequestButton.setVisibility(View.INVISIBLE);
+                                DeclineMessageRequestButton.setEnabled(false);
                             }
                         }
                     });

@@ -35,6 +35,8 @@ public class ProfileActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
 
     String Current_State , senderUserID; //senderuserid to prevent the user for sending the message to himself
+    //to show in contacts fragment
+    private DatabaseReference ContactsRef;
 
 
 
@@ -51,6 +53,8 @@ public class ProfileActivity extends AppCompatActivity {
         receiverUserID = getIntent().getExtras().get("visit_user_id").toString();
         //to stop the user to send message to himself
         senderUserID = mAuth.getCurrentUser().getUid();
+        //for the contacts
+        ContactsRef = FirebaseDatabase.getInstance().getReference().child("Contacts");
 
 
         //Toast.makeText(this, "User id received: " + receiverUserID, Toast.LENGTH_SHORT).show();
@@ -142,6 +146,26 @@ public class ProfileActivity extends AppCompatActivity {
                         });
 
                     }
+                }else{
+                    //if the receiver user id child has been removed it means that the request has been accepted
+                    //and it present in the contacts
+                    //so that the button remains same everytime we click on that friend
+                    ContactsRef.child(senderUserID).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            //You can use the onDataChange() method to read a static snapshot of the contents at a given path, as they existed at the time of the event.
+
+                            if(dataSnapshot.hasChild(receiverUserID)){
+                                Current_State = "friends";
+                                SendMessageRequestButton.setText("Remove This Contact");
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
                 }
 
 
@@ -167,7 +191,13 @@ public class ProfileActivity extends AppCompatActivity {
 
                     }
                     if(Current_State.equals("request_sent")){
+                        //if the request is already sent
                         CancelChatRequest();
+                    }
+                    if(Current_State.equals("request_received")){
+                        //if the receiver accepts the chat request
+                        AcceptChatRequest();
+
                     }
                 }
             });
@@ -176,6 +206,63 @@ public class ProfileActivity extends AppCompatActivity {
             SendMessageRequestButton.setVisibility(View.INVISIBLE);
 
         }
+
+    }
+
+    private void AcceptChatRequest() {
+        //we will show that accepted person in the contacts fragment
+        //Contacts ref is referencing the a new parent node of contacts
+        //it is saved to the senders
+
+        //it is because the sender will store the child of receiver to show the contacts of receiver and receiver will store the child of sender to show in contacts
+        ContactsRef.child(senderUserID).child(receiverUserID).child("Contacts").setValue("Saved")
+        .addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isSuccessful()){
+                    //now save it for the receiver because we have to show it to both the users
+                    ContactsRef.child(receiverUserID).child(senderUserID).child("Contacts").setValue("Saved")
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    //remove the chat request from the database
+                                    if(task.isSuccessful()){
+                                        //remove the chat request from the chats parent node
+                                        ChatRequestRef.child(senderUserID).child(receiverUserID).removeValue()
+                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                //now remove the request from the receiver end
+                                                if(task.isSuccessful()){
+                                                    ChatRequestRef.child(receiverUserID).child(senderUserID).removeValue()
+                                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                @Override
+                                                                public void onComplete(@NonNull Task<Void> task) {
+                                                                    //now the chat request is deleted from both the end
+                                                                    SendMessageRequestButton.setEnabled(true);
+                                                                    Current_State = "friends";
+                                                                    //now both the users have the choice to remove them from their contacts
+                                                                    SendMessageRequestButton.setText("Remove This Contact");
+                                                                    DeclineMessageRequestButton.setVisibility(View.INVISIBLE);
+                                                                    DeclineMessageRequestButton.setEnabled(false);
+
+
+                                                                }
+                                                            });
+                                                }
+
+                                            }
+                                        });
+                                    }
+
+
+                                }
+                            });
+
+
+                }
+            }
+        });
 
     }
 

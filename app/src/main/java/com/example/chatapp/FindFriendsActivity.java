@@ -6,6 +6,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -67,13 +68,29 @@ public class FindFriendsActivity extends AppCompatActivity {
             //Adapters provide a binding from an app-specific data set to views that are displayed within a RecyclerView
             @Override
             //it is called whenever the items are recycled.
-            protected void onBindViewHolder(@NonNull FindFriendViewHolder holder, int position, @NonNull Contacts model) {
+            protected void onBindViewHolder(@NonNull FindFriendViewHolder holder, final int position, @NonNull Contacts model) {
                 //setting the values gained after querying the database to the fields
                 holder.userName.setText(model.getName());
                 holder.userStatus.setText(model.getStatus());
                 //display image using picasso
                 //if user didnt set the placeholder will take its place
                 Picasso.get().load(model.getImage()).placeholder(R.drawable.profile_image).into(holder.profileImage);
+
+                //after binding the view how set the click listener for the item which is the profile layout
+                //we should get the unique user id of the user
+                holder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        //send the user to the friends profile activity
+                        //it will first find the reference  of the item clicked and then will get the key  of it
+                        String visit_user_id = getRef(position).getKey();
+
+                        //now send the user to display the profile activity of the friend
+                        Intent profileIntent = new Intent(FindFriendsActivity.this,ProfileActivity.class);
+                        profileIntent.putExtra("visit_user_id",visit_user_id);
+                        startActivity(profileIntent);
+                    }
+                });
 
             }
 

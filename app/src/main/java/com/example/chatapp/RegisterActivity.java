@@ -111,7 +111,7 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void SendUserToMainActivity() {
-        Intent mainIntent = new Intent(RegisterActivity.this,LoginActivity.class);
+        Intent mainIntent = new Intent(RegisterActivity.this,MainActivity.class);
         //to prevent the user to go back to the login activity after logging in
         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 

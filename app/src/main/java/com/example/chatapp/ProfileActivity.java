@@ -199,6 +199,10 @@ public class ProfileActivity extends AppCompatActivity {
                         AcceptChatRequest();
 
                     }
+                    //it means that the user are friends and this button has the label of remove from contacs
+                    if(Current_State.equals("friends")){
+                        RemoveSpecificContact();
+                    }
                 }
             });
 
@@ -207,6 +211,34 @@ public class ProfileActivity extends AppCompatActivity {
 
         }
 
+    }
+
+    private void RemoveSpecificContact() {
+
+        //remove from contacts in  databse
+        ContactsRef.child(senderUserID).child(receiverUserID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isSuccessful()){
+                    ContactsRef.child(receiverUserID).child(senderUserID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if(task.isSuccessful()){
+                                //set the button text back to normal
+                                SendMessageRequestButton.setEnabled(true);
+                                Current_State = "new";
+                                SendMessageRequestButton.setText("Send Message Request");
+
+                                DeclineMessageRequestButton.setVisibility(View.INVISIBLE);
+                                DeclineMessageRequestButton.setEnabled(false);
+                            }
+
+                        }
+                    });
+                }
+
+            }
+        });
     }
 
     private void AcceptChatRequest() {

@@ -102,7 +102,7 @@ public class RequestsFragment extends Fragment {
                             String type = dataSnapshot.getValue().toString();
                             if(type.equals("received")){
                                 //now retrieve the value of that user from the users node
-                                UsersRef.addValueEventListener(new ValueEventListener() {
+                                UsersRef.child(list_user_id).addValueEventListener(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(DataSnapshot dataSnapshot) {
                                         //since image can be optional

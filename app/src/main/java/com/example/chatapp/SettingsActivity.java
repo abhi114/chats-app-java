@@ -88,6 +88,7 @@ public class SettingsActivity extends AppCompatActivity {
                 //By the help of android startActivityForResult() method, we can get result from another activity.
                 startActivityForResult(galleryIntent,GalleryPic);
                 //this result is catched in the onActivityResult()
+
             }
         });
     }
@@ -143,13 +144,13 @@ public class SettingsActivity extends AppCompatActivity {
             Toast.makeText(this, "Please write your status..", Toast.LENGTH_SHORT).show();
         }else{
             //saving the data in the firebase using hashmap -> key value pair
-            HashMap<String,String> profileMap = new HashMap<>(); //values for name and status
+            HashMap<String,Object> profileMap = new HashMap<>(); //values for name and status
             profileMap.put("uid",currentUserID);
             profileMap.put("name",setUserName); // this id should be save as the one used for retrieving
             profileMap.put("status",setUserStatus); //whole profilemap contains the id name and status
 
             //now adding the value to the database
-            rootRef.child("Users").child(currentUserID).setValue(profileMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+            rootRef.child("Users").child(currentUserID).updateChildren(profileMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
                     //listener is used to check if the uploading task is successful or not
@@ -215,7 +216,7 @@ public class SettingsActivity extends AppCompatActivity {
                 loadingBar.setCanceledOnTouchOutside(false);
                 loadingBar.show();
                 //get the uri of the cropped image
-                final Uri resultUri = result.getUri();
+                Uri resultUri = result.getUri();
 
 
                 //store in firebase database
@@ -224,30 +225,36 @@ public class SettingsActivity extends AppCompatActivity {
                 final StorageReference filePath = UserProfileImageRef.child(currentUserID + ".jpg");
 
                 //put the file in database
-                filePath.putFile(resultUri).addOnSuccessListener(   new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                filePath.putFile(resultUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        //Asynchronously retrieves a long lived download URL with a revokable token.
                         filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                             @Override
                             public void onSuccess(Uri uri) {
                                 final String downloadUrl = uri.toString();
-                                //
                                 rootRef.child("Users").child(currentUserID).child("image").setValue(downloadUrl).addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
                                         if(task.isSuccessful()){
-                                            Toast.makeText(SettingsActivity.this, "Profile Image Stored to database", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(SettingsActivity.this, "Profile image stored to database successfully.", Toast.LENGTH_SHORT).show();
                                             loadingBar.dismiss();
-                                        }else {
-                                            String message = task.getException().toString();
-                                            Toast.makeText(SettingsActivity.this, "Error :" + message, Toast.LENGTH_SHORT).show();
+
+
+                                        }else{
+                                            String message = task.getException().getMessage();
+
+                                            Toast.makeText(SettingsActivity.this, "Error Occurred..." + message, Toast.LENGTH_SHORT).show();
+
                                             loadingBar.dismiss();
+
                                         }
+
                                     }
                                 });
+
                             }
                         });
+
                     }
                 });
 

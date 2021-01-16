@@ -19,6 +19,7 @@ import com.google.firebase.FirebaseException;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.PhoneAuthCredential;
+import com.google.firebase.auth.PhoneAuthOptions;
 import com.google.firebase.auth.PhoneAuthProvider;
 
 import java.util.concurrent.TimeUnit;
@@ -72,13 +73,14 @@ public class PhoneLoginActivity extends AppCompatActivity {
                     loadingBar.setCanceledOnTouchOutside(false);
                     loadingBar.show();
                     //send verification to the user
+                    PhoneAuthOptions options = PhoneAuthOptions.newBuilder(mAuth)
+                            .setPhoneNumber(phoneNumber)
+                            .setTimeout(60L,TimeUnit.SECONDS)
+                            .setActivity(PhoneLoginActivity.this)
+                            .setCallbacks(mCallbacks)
+                            .build();
                     //Represents the phone number authentication mechanism. Use this class to obtain PhoneAuthCredentials.
-                    PhoneAuthProvider.getInstance().verifyPhoneNumber(
-                            phoneNumber,       //phone number to verify
-                            60,    //time duration
-                            TimeUnit.SECONDS , //unit of timeout
-                            PhoneLoginActivity.this,
-                            mCallbacks);
+                    PhoneAuthProvider.verifyPhoneNumber(options);
 
                 }
             }

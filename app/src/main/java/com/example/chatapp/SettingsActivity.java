@@ -3,6 +3,7 @@ package com.example.chatapp;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -52,6 +53,9 @@ public class SettingsActivity extends AppCompatActivity {
     private StorageReference UserProfileImageRef;
     //progress dialog for loading
     private ProgressDialog loadingBar;
+
+    //for the toolbar
+    private Toolbar SettingsToolBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -150,6 +154,7 @@ public class SettingsActivity extends AppCompatActivity {
             profileMap.put("status",setUserStatus); //whole profilemap contains the id name and status
 
             //now adding the value to the database
+            //updateChildren means that we dont want to delete the previous present child we just want to update it
             rootRef.child("Users").child(currentUserID).updateChildren(profileMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
@@ -178,6 +183,15 @@ public class SettingsActivity extends AppCompatActivity {
         userStatus = (EditText) findViewById(R.id.set_profile_status);
         userProfileImage = (CircleImageView) findViewById(R.id.profile_image);
         loadingBar = new ProgressDialog(this);
+
+        SettingsToolBar = (Toolbar) findViewById(R.id.settings_toolbar);
+        setSupportActionBar(SettingsToolBar);
+        //Set whether home should be displayed as an "up" affordance.
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        //Set whether a custom view should be displayed, if set.
+        getSupportActionBar().setDisplayShowCustomEnabled(true);
+        getSupportActionBar().setTitle("Account Settings");
+
     }
 
     private void SendUserToMainActivity(){

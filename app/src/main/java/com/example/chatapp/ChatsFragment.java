@@ -37,6 +37,8 @@ public class ChatsFragment extends Fragment {
     private String currentUserID;
     //users node reference
     private DatabaseReference usersRef;
+    //to pass the image
+
 
 
 
@@ -85,6 +87,7 @@ public class ChatsFragment extends Fragment {
                 //we will display it
                 //it will get each child under current user under  the contacts line by line
                 final String usersIds = getRef(position).getKey(); //key means unique id
+                final String[] retImage = {"default_image"};
 
                 //for every data change in these user will be reflected in the fragment
                 usersRef.child(usersIds).addValueEventListener(new ValueEventListener() {
@@ -94,12 +97,12 @@ public class ChatsFragment extends Fragment {
                         if(snapshot.exists()){
                             if(snapshot.hasChild("image"))
                             {
-                                final String retImage = snapshot.child("image").getValue().toString();
+                                retImage[0] = snapshot.child("image").getValue().toString();
                                 final String retName = snapshot.child("name").getValue().toString();
                                 final String retStatus = snapshot.child("status").getValue().toString();
 
                                 //now display using the holder
-                                Picasso.get().load(retImage).placeholder(R.drawable.profile_image).into(holder.profileImage);
+                                Picasso.get().load(retImage[0]).placeholder(R.drawable.profile_image).into(holder.profileImage);
                                 holder.userName.setText(retName);
                                 holder.userStatus.setText("Last Seen : " + "\n" + "Date " + "Time");
 
@@ -122,6 +125,7 @@ public class ChatsFragment extends Fragment {
                                     //it will send the userid and the name of the clicked user
                                     chatIntent.putExtra("visit_user_id",usersIds);
                                     chatIntent.putExtra("visit_user_name",sendName);
+                                    chatIntent.putExtra("visit_image", retImage[0]);
                                     startActivity(chatIntent);
 
                                 }

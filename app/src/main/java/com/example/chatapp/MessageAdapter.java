@@ -108,20 +108,23 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         {   //we are first making the friends message area invisible
             holder.receiverMessageText.setVisibility(View.INVISIBLE);
             holder.receiverProfileImage.setVisibility(View.INVISIBLE);
+            holder.senderMessageText.setVisibility(View.INVISIBLE);
 
             //now if the sender of the message is the current user
             //we will let the receiver area be invisible
             //and we will set the background resource to sender message layout
             if(fromUserID.equals(messageSenderId)){
+                holder.senderMessageText.setVisibility(View.VISIBLE);
                 holder.senderMessageText.setBackgroundResource(R.drawable.sender_messages_layout);
                 holder.senderMessageText.setTextColor(Color.BLACK);
                 holder.senderMessageText.setText(messages.getMessage());
+
 
             }else{
                 //if its the friends message
                 //make the receiver are visible
                 //make the current user side invisible text only as it does not contains image for current user side
-                holder.senderMessageText.setVisibility(View.INVISIBLE);
+
                 holder.receiverProfileImage.setVisibility(View.VISIBLE);
                 holder.receiverMessageText.setVisibility(View.VISIBLE);
 

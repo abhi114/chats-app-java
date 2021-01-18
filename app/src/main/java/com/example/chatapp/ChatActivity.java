@@ -175,6 +175,18 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        messagesList.clear();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        messagesList.clear();
+    }
+
     private void SendMessage() {
         String messageText = MessageInputText.getText().toString();
         if(TextUtils.isEmpty(messageText)){

@@ -68,7 +68,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     }
 
 
-
+    //Called by RecyclerView to display the data at the specified position.
+    // This method should update the contents of the RecyclerView.ViewHolder.itemView
+    // to reflect the item at the given position.
     @Override
     public void onBindViewHolder(@NonNull final MessageViewHolder holder, int position) {
         //now we will retrieve and display the messages
@@ -124,9 +126,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 holder.receiverMessageText.setVisibility(View.VISIBLE);
 
                 //now display the messages
-                holder.senderMessageText.setBackgroundResource(R.drawable.receiver_messages_layout);
-                holder.senderMessageText.setTextColor(Color.BLACK);
-                holder.senderMessageText.setText(messages.getMessage());
+                holder.receiverMessageText.setBackgroundResource(R.drawable.receiver_messages_layout);
+                holder.receiverMessageText.setTextColor(Color.BLACK);
+                holder.receiverMessageText.setText(messages.getMessage());
 
 
 

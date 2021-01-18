@@ -1,9 +1,12 @@
 package com.example.chatapp;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -18,11 +21,16 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -47,6 +55,12 @@ public class ChatActivity extends AppCompatActivity {
 
     //reference to the root
     private DatabaseReference RootRef;
+
+    //fetch the messages
+    private final List<Messages> messagesList = new ArrayList<>();
+    private LinearLayoutManager linearLayoutManager;
+    private MessageAdapter messageAdapter;
+    private RecyclerView userMessagesList;
 
 
 
@@ -110,8 +124,55 @@ public class ChatActivity extends AppCompatActivity {
         SendMessageButton = (ImageButton) findViewById(R.id.send_message_btn);
         MessageInputText = (EditText) findViewById(R.id.input_message);
 
+        messageAdapter = new MessageAdapter(messagesList);
+        userMessagesList = (RecyclerView) findViewById(R.id.private_messages_list_of_users);
+        linearLayoutManager = new LinearLayoutManager(this);
+        userMessagesList.setLayoutManager(linearLayoutManager);
+        userMessagesList.setAdapter(messageAdapter);
 
 
+
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        //event listener for whenever a new child(message) is added to it
+        RootRef.child("Messages").child(MessageSenderID).child(messageReceiverID).addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                //This method is used to marshall the data contained in this snapshot into a class of your choosing.
+                // An instance of the class passed in, populated with the data from this snapshot
+                Messages messages = snapshot.getValue(Messages.class);
+
+                //add the message to the message list in the form of message class
+                messagesList.add(messages);
+                //Notify any registered observers that the data set has changed.
+                messageAdapter.notifyDataSetChanged();
+
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     private void SendMessage() {

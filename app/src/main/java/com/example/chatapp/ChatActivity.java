@@ -151,6 +151,9 @@ public class ChatActivity extends AppCompatActivity {
                 //Notify any registered observers that the data set has changed.
                 messageAdapter.notifyDataSetChanged();
 
+                //to scroll the view directly to the bottom
+                userMessagesList.smoothScrollToPosition(userMessagesList.getAdapter().getItemCount());
+
             }
 
             @Override

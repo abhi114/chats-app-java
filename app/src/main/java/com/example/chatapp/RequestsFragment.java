@@ -154,6 +154,91 @@ public class RequestsFragment extends Fragment {
                                 });
 
 
+                            }else if(type.equals("sent")){ //if the user has send the request then change the layout for the sent type
+                                //set the accept btn as request send
+                                Button request_sent_btn = requestViewHolder.itemView.findViewById(R.id.request_accept_btn);
+                                request_sent_btn.setText("Requested");
+                                //make the button invisible for sent request btn
+                                requestViewHolder.itemView.findViewById(R.id.request_cancel_btn).setVisibility(View.INVISIBLE);
+
+                                UsersRef.child(list_user_id).addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        //since image can be optional
+                                        if(dataSnapshot.hasChild("image")){
+
+                                            final String requestUserProfileImage = dataSnapshot.child("image").getValue().toString();
+
+                                            //now display the value
+                                            Picasso.get().load(requestUserProfileImage).placeholder(R.drawable.profile_image).into(requestViewHolder.profileImage);
+
+
+                                        }
+                                        final String requestUserName = dataSnapshot.child("name").getValue().toString();
+                                        final String requestUserStatus = dataSnapshot.child("status").getValue().toString();
+                                        requestViewHolder.userName.setText(requestUserName);
+                                        requestViewHolder.userStatus.setText("you have sent a request to this user");
+
+                                        requestViewHolder.AcceptButton.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                //options for dialog box
+                                                CharSequence options[] = new CharSequence[]{
+                                                        "Cancel Request"
+
+                                                };
+                                                //alert dialog to confirm the option
+                                                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                                                builder.setTitle( requestUserName +" Chat Request");
+                                                //we had passed the charSequence to the dialog as positive and negative buttons
+                                                builder.setItems(options, new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialog, int which) {
+
+                                                        if(which == 0){
+                                                            //clicked on cancel
+                                                            //remove from the request
+                                                            ChatRequestsRef.child(currentUserID).child(list_user_id).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                @Override
+                                                                public void onComplete(@NonNull Task<Void> task) {
+                                                                    if(task.isSuccessful()){
+                                                                        ChatRequestsRef.child(list_user_id).child(currentUserID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                            @Override
+                                                                            public void onComplete(@NonNull Task<Void> task) {
+                                                                                if(task.isSuccessful()){
+                                                                                    Toast.makeText(getContext(), "Request Canceled", Toast.LENGTH_SHORT).show();
+                                                                                }
+
+                                                                            }
+                                                                        });
+                                                                    }
+
+                                                                }
+                                                            });
+
+                                                        }
+
+                                                    }
+                                                });
+
+                                                builder.show();
+
+
+
+                                            }
+                                        });
+
+
+                                    }
+
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+
+                                    }
+                                });
+
+
+
                             }
                         }
 

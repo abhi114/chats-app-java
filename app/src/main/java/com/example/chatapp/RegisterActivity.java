@@ -19,6 +19,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import org.w3c.dom.Text;
 
@@ -88,10 +89,24 @@ public class RegisterActivity extends AppCompatActivity {
                     //if user is created successfully
 
                     if(task.isSuccessful()){
+                        //get the token for notification
+
+
                         //SendUserToLoginActivity();
                         //getting the id of the current user
-                        String currentUserId = mAuth.getCurrentUser().getUid();
+                        final String currentUserId = mAuth.getCurrentUser().getUid();
                         rootRef.child("Users").child(currentUserId).setValue("");
+
+                        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
+                            @Override
+                            public void onComplete(@NonNull Task<String> task) {
+                                String  deviceToken = task.getResult();
+                                rootRef.child("Users").child(currentUserId).child("device_token").setValue(deviceToken);
+
+                            }
+                        });
+
+
 
                         SendUserToMainActivity(); // so that the user can directly use the app when he creates the account
                         Toast.makeText(RegisterActivity.this, "Account Created Successfully", Toast.LENGTH_SHORT).show();

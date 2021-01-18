@@ -21,6 +21,8 @@ import com.squareup.picasso.Picasso;
 
 import org.w3c.dom.Text;
 
+import java.util.HashMap;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ProfileActivity extends AppCompatActivity {
@@ -37,6 +39,8 @@ public class ProfileActivity extends AppCompatActivity {
     String Current_State , senderUserID; //senderuserid to prevent the user for sending the message to himself
     //to show in contacts fragment
     private DatabaseReference ContactsRef;
+    //reference to create the notification node
+    private DatabaseReference NotificationRef;
 
 
 
@@ -55,6 +59,7 @@ public class ProfileActivity extends AppCompatActivity {
         senderUserID = mAuth.getCurrentUser().getUid();
         //for the contacts
         ContactsRef = FirebaseDatabase.getInstance().getReference().child("Contacts");
+        NotificationRef = FirebaseDatabase.getInstance().getReference().child("Notifications");
 
 
         //Toast.makeText(this, "User id received: " + receiverUserID, Toast.LENGTH_SHORT).show();
@@ -338,9 +343,28 @@ public class ProfileActivity extends AppCompatActivity {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if(task.isSuccessful()){
-                                SendMessageRequestButton.setEnabled(true);
-                                Current_State = "request_sent";
-                                SendMessageRequestButton.setText("Cancel Chat Request");
+                                //we will create a new node for notification feature of the request
+                                HashMap<String,String> chatNotificationMap = new HashMap<>();
+                                //from which user we are recieving the request
+                                chatNotificationMap.put("from",senderUserID);
+                                chatNotificationMap.put("type","request");
+
+                                NotificationRef.child(receiverUserID).push() //create a child for the receiver of the request with a unique key as its child
+                                .setValue(chatNotificationMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if(task.isSuccessful()){
+                                            SendMessageRequestButton.setEnabled(true);
+                                            Current_State = "request_sent";
+                                            SendMessageRequestButton.setText("Cancel Chat Request");
+
+                                        }
+
+                                    }
+                                });
+
+
+
                             }
                         }
                     });

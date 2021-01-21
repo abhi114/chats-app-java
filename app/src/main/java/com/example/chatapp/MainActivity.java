@@ -26,6 +26,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.HashMap;
+
 public class MainActivity extends AppCompatActivity {
 
 
@@ -36,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseUser currentUser; //Represents a user's profile information in your Firebase project's user database.
     private FirebaseAuth mAuth;
     private DatabaseReference RootRef;
+    private String currentUserID; // get the current user id for storing the online offline state
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,8 +80,28 @@ public class MainActivity extends AppCompatActivity {
         }
         // verify if user has give his username or not
         else{
+            //it means the user is using the app and is online
+            updateUserStatus("online");
             VerifyUserExistence();
 
+        }
+    }
+
+    //it means the user is not using the app and now we should set the offline state
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(currentUser != null){
+            updateUserStatus("offline");
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //it means that the account is already created
+        if(currentUser != null){
+            updateUserStatus("offline");
         }
     }
 
@@ -237,5 +262,40 @@ public class MainActivity extends AppCompatActivity {
         //we dont want the user to go back to the main activity so added the flags
         //SettingIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(FindFriendIntent);
+    }
+
+    //for last seen of the user
+    //we will get the offline and online state in this string state variable
+    private void updateUserStatus(String state){
+        //get the current date and time at the time of last seen
+        String saveCurrentTime ,saveCurrentDate;
+
+        Calendar calendar = Calendar.getInstance();
+        // the format in which the current date gets stored
+        SimpleDateFormat currentDate = new SimpleDateFormat("MMM dd, yyyy");
+        //it will get the time which will be formatted in the desired format
+        saveCurrentDate = currentDate.format(calendar.getTime());
+
+        //now for time
+        //using 12 hrs format
+        SimpleDateFormat currentTime = new SimpleDateFormat("   hh:mm a");
+        saveCurrentTime = currentTime.format(calendar.getTime());
+        //now save the data in the database
+
+        HashMap<String,Object> onlineState = new HashMap<>();
+        onlineState.put("time",saveCurrentTime);
+        onlineState.put("date",saveCurrentDate);
+        //state is the online or offline state
+        onlineState.put("state",state);
+
+
+        //now save the data for each specific user in the Users node
+        currentUserID = mAuth.getCurrentUser().getUid();
+        //reference to the root for uploading the info
+        //create the online offline node
+        RootRef.child("Users").child(currentUserID).child("userState").updateChildren(onlineState);
+
+
+
     }
 }
